@@ -21,10 +21,10 @@ class SplashScreen:
         #                   SISTEMA DE VENDAS                     
         #                                                         
         #  TOTAL DE REGISTROS:                                    
-        #      1 - : Administradores : {str(self.get_documents_count(collection_name="Administradores")).rjust(5)}
-        #      2 - : Cotacoes : {str(self.get_documents_count("Cotacoes")).rjust(5)}
-        #      3 - : Dividendos : {str(self.get_documents_count("Dividendos")).rjust(5)}
-        #      4 - : Fundos : {str(self.get_documents_count("Fundos")).rjust(5)}
+        #      1 - : Administradores : {str(self.get_documents_count(collection_name="ADMINISTRADORES")).rjust(5)}
+        #      2 - : Cotacoes : {str(self.get_documents_count("COTACOES")).rjust(5)}
+        #      3 - : Dividendos : {str(self.get_documents_count("ADMINISTRADORES")).rjust(5)}
+        #      4 - : Fundos : {str(self.get_documents_count("FUNDOS")).rjust(5)}
         #
         #  CRIADO POR: {self.created_by}
         #               {self.created_by2}

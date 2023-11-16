@@ -27,7 +27,7 @@ class MongoQueries:
 
         mongo = self.connect()
 
-        my_collection = mongo.db[collection_name]
+        my_collection = mongo[collection_name]
         total_documentos = my_collection.count_documents({})
         self.close()
         df = pd.DataFrame({f"total_{collection_name}": [total_documentos]})
@@ -37,7 +37,7 @@ class MongoQueries:
 
         mongo = self.connect()
         collection = collection_name.replace("\n", '')
-        my_Collection = mongo.db[collection]
+        my_Collection = mongo[collection]
 
         data_fd = pd.DataFrame(my_Collection)
 
