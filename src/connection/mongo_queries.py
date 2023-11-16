@@ -7,7 +7,7 @@ class MongoQueries:
         self.port = 27017
         self.service_name = 'labdatabase'
 
-        with open("conexion/passPhrase/authentication.mongo", "r") as f:
+        with open("src/connection/passPhrase/authentication.mongo", "r") as f:
             self.user, self.passwd = f.read().split(',')
 
     def __del__(self):
@@ -17,6 +17,7 @@ class MongoQueries:
     def connect(self):
         self.mongo_client = pymongo.MongoClient(f"mongodb://{self.user}:{self.passwd}@localhost:27017/")
         self.db = self.mongo_client["labdatabase"]
+        return self.db
 
     def close(self):
         self.mongo_client.close()
@@ -28,10 +29,20 @@ class MongoQueries:
 
         my_collection = mongo.db[collection_name]
         total_documentos = my_collection.count_documents({})
-        mongo.close()
+        self.close()
         df = pd.DataFrame({f"total_{collection_name}": [total_documentos]})
         return df
     
+    def reports(self, collection_name) -> pd.DataFrame:
+
+        mongo = self.connect()
+        collection = collection_name.replace("\n", '')
+        my_Collection = mongo.db[collection]
+
+        data_fd = pd.DataFrame(my_Collection)
+
+        return data_fd
+
     def recover_data(self, coluns:str=None, external:bool=False, seek:dict={}) -> pd.DataFrame:
         """
         @param: coluns -> coluna de busca dos dados

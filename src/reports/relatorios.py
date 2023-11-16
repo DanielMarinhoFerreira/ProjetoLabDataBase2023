@@ -1,4 +1,4 @@
-from connection.oracle_queries import OracleQueries
+from connection.mongo_queries import MongoQueries
 #
 # Implementar 
 # Base montada 
@@ -17,9 +17,8 @@ class Relatorio:
             return None  
         if self.query_relatorio !='':
 
-            oracle = OracleQueries()
-            oracle.connect()
-            data = oracle.sqlToDataFrame(self.query_relatorio)
+            mongo = MongoQueries()
+            data = mongo.reports(self.query_relatorio)
             print(data.head())
             return 
         else: 

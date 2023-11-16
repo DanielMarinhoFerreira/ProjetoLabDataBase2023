@@ -18,10 +18,10 @@ ctrl_fundos = Controller_Fundos()
 def reports(opcao_relatorio:int=0):
 
     if opcao_relatorio == 1:
-        relatorio.get_relatorio('Relatorio_fundos.sql')       
+        relatorio.get_relatorio('Relatorio_fundos.js')       
         sleep(5)     
     elif opcao_relatorio == 2:
-        relatorio.get_relatorio('Relatorio_fundos_adm.sql')
+        relatorio.get_relatorio('Relatorio_fundos_adm.js')
         sleep(5)
     elif opcao_relatorio == 3:
         relatorio.get_relatorio('Relatorio_Cotacoes_por_fundos.sql')
