@@ -32,16 +32,6 @@ class MongoQueries:
         self.close()
         df = pd.DataFrame({f"total_{collection_name}": [total_documentos]})
         return df
-    
-    def reports(self, collection_name) -> pd.DataFrame:
-
-        mongo = self.connect()
-        collection = collection_name.replace("\n", '')
-        my_Collection = mongo[collection]
-
-        data_fd = pd.DataFrame(my_Collection)
-
-        return data_fd
 
     def recover_data(self, coluns:str=None, external:bool=False, seek:dict={}) -> pd.DataFrame:
         """

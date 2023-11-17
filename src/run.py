@@ -18,19 +18,19 @@ ctrl_fundos = Controller_Fundos()
 def reports(opcao_relatorio:int=0):
 
     if opcao_relatorio == 1:
-        relatorio.get_relatorio('Relatorio_fundos.js')       
+        relatorio.get_fundos()  
         sleep(5)     
     elif opcao_relatorio == 2:
-        relatorio.get_relatorio('Relatorio_fundos_adm.js')
+        relatorio.get_fundos_admin()
         sleep(5)
     elif opcao_relatorio == 3:
-        relatorio.get_relatorio('Relatorio_Cotacoes_por_fundos.sql')
+        relatorio.get_Cotacoes_por_fundos()
         sleep(5)
     elif opcao_relatorio == 4:
-        relatorio.get_relatorio('Relatorio_de_Segmentos.sql')
+        relatorio.get_segmentos()
         sleep(5)
     elif opcao_relatorio == 5:
-        relatorio.get_relatorio('Rolatorio_dividendos.sql')
+        relatorio.get_dividendos()
         sleep(5)
         
 def inserir(opcao_inserir:int=0):
