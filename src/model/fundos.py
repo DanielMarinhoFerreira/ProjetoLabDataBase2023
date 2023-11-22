@@ -54,7 +54,7 @@ class Fundos:
     def get_tipo_gestao(self):
         return self.tipo_gestao
     
-    def get_cnpl_admin(self):
+    def get_cnpj_admin(self):
         return self.cnpj_admin
     
     def set_cnpl_admin(self, cnpj):

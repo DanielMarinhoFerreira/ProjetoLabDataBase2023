@@ -11,15 +11,15 @@ class Controller_Cotacoes():
     def inserir_cotacoes(self) -> None:
         
         # Cria uma nova conexão com o banco que permite alteração
-        self.mongo.connect()
+        db = self.mongo.connect()
         
         # Solicita ao usuário o código do fundo a ser alterado
         ticker = input("informe o ticker do fundo: ")
-        while self.verifica_existencia(coluns='FUNDOS', seek={}):
+        while self.verifica_existencia(db=db, coluns='FUNDOS', seek=[("ticker", ticker)], header=[("_id", 0),("ticker",1),("tipo_abbima",1)]):       #Criar pesquisa
             ticker = input("informe o ticker do fundo: ")
         
         # Solicita ao usuario o cadastro do cotacoes
-        cota = self.cadastrar_cotacao(ticker=ticker)
+        cota = self.cadastrar_cotacao(db=db, ticker=ticker)
 
         if self.verifica_existencia(coluna='COTACOES', seek={}):
             
@@ -101,7 +101,7 @@ class Controller_Cotacoes():
 
         return
     
-    def cadastrar_cotacao(self, ticker:str='') -> Cotacoes:
+    def cadastrar_cotacao(self, db, ticker:str='') -> Cotacoes:
         mes:str = ''
         cotacao = Cotacoes()
 
@@ -111,7 +111,7 @@ class Controller_Cotacoes():
         
         if ticker == '':
             ticker = input("Ticker (Novo): ")
-            while self.verifica_existencia(coluns='FUNDOS', seek={}):
+            while self.verifica_existencia(db=db, coluns='FUNDOS', seek=[("ticker", ticker)], header=[("_id", 0),("ticker",1),("tipo_abbima",1)]):       #Criar pesquisa
                 ticker = input("informe o ticker do fundo: ")
         
         cotacao.set_ticker(ticker)
@@ -125,7 +125,7 @@ class Controller_Cotacoes():
         
         mes= input("Mês cotação (Novo): ")
         
-        while not self.verifica_existencia(coluns='COTACOES', seek={}):
+        while not self.verifica_existencia(db=db, coluns='COTACOES', seek=[("ticker", ticker),('mes',mes)], header=[("_id", 0),("ticker",1),("mes",1)]):       #Criar pesquisa
             mes = input("Mês cotação (Novo): ")
 
         cotacao.set_mes(mes)
@@ -134,8 +134,13 @@ class Controller_Cotacoes():
         return cotacao 
     
 
-    def verifica_existencia(self, coluns:str=None, seek:dict={}) -> bool:
-        # Recupera os dados do novo cliente criado transformando em um DataFrame
-        df_cliente = pd.DataFrame(self.mongo.db[coluns].find(seek))
-       
+    def verifica_existencia(self,db, coluns:str=None, seek:list=(), header:list=()) -> bool:
+        
+        if len(header) > 1:
+            aux_header = dict(header)
+        else:
+            aux_header = {}
+        
+        df_cliente = pd.DataFrame(db[coluns].find(dict(seek), aux_header))
+        
         return df_cliente.empty

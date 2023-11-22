@@ -1,9 +1,6 @@
 from connection.mongo_queries import MongoQueries
 import pandas as pd
-#
-# Implementar 
-# Base montada 
-# #
+
 class Relatorio:
     
     def __init__(self):
@@ -17,17 +14,17 @@ class Relatorio:
         db = mongo.connect()
 
         query_result = db["FUNDOS"].find({},{
-                                            "TICKER": 1,
-                                            "TIPO_ABBIMA": 1,
-                                            "SEGMENTO": 1,
-                                            "CONTA_EMIT": 1,
-                                            "NUM_COTAS": 1,
-                                            "RAZAO_SOCIAL": 1,
-                                            "CNPJ": 1,
-                                            "NOME_PREGAO": 1,
-                                            "PRAZO_DURACAO": 1,
-                                            "TIPO_GESTAO": 1,
-                                            "CNPJ_ADMIN": 1,
+                                            "ticker": 1,
+                                            "tipo_abbima": 1,
+                                            "segmento": 1,
+                                            "conta_emit": 1,
+                                            "num_cotas": 1,
+                                            "razao_social": 1,
+                                            "cnpj": 1,
+                                            "nome_pregao": 1,
+                                            "prazo_duracao": 1,
+                                            "tipo_gestao": 1,
+                                            "cnpj_admin": 1,
                                             "_id": 0
                                         })
         cot_fundos = pd.DataFrame(list(query_result))
@@ -43,7 +40,7 @@ class Relatorio:
         db = mongo.connect()
 
         query_result = db["FUNDOS"].find({},{
-                                        "SEGMENTO": 1,
+                                        "segmento": 1,
                                         "_id": 0
                                         })
         
@@ -60,8 +57,8 @@ class Relatorio:
 
         query_result = db["FUNDOS"].aggregate([{
                                 "$lookup": {"from": "ADMINISTRADORES",
-                                            "localField": "CNPJ_ADMIN",
-                                            "foreignField": "CNPJ_ADMIN",
+                                            "localField": "cnpj_admin",
+                                            "foreignField": "cnpj_admin",
                                             "as": "administrador"
                                             }
                                             },
@@ -69,18 +66,18 @@ class Relatorio:
                                                 "$unwind": "$administrador"
                                             },
                                             {
-                                            "$match": {"TICKER": { "$ne": "null" }}
+                                            "$match": {"ticker": { "$ne": "null" }}
                                             },
                                             {
-                                            "$sort": {"TICKER": 1}
+                                            "$sort": {"ticker": 1}
                                             },
                                             {"$project": {
                                             "_id": "0",
-                                            "TICKER": "$TICKER",
-                                            "TIPO_ABBIMA": "$TIPO_ABBIMA",
-                                            "SEGMENTO": "$SEGMENTO",
-                                            "CNPJ_ADMIN": "$administrador.CNPJ_ADMIN",
-                                            "NOME_ADMIN": "$administrador.NOME"
+                                            "ticker": "$ticker",
+                                            "tipo_abbima": "$tipo_abbima",
+                                            "segmento": "$segmento",
+                                            "cnpj_admin": "$administrador.cnpj_admin",
+                                            "nome_admin": "$administrador.nome"
                                                         }
                                             }])
         df_fundos_admin = pd.DataFrame(list(query_result))
@@ -88,16 +85,15 @@ class Relatorio:
         mongo.close()
         print(df_fundos_admin)
         print('')
-        input("Precione Enter para sair do Relatorio")
+        input("precione enter para sair do relatorio")
 
     def get_fundos(self):
-        # Relatorio funtos 
+        # relatorio funtos 
         mongo = MongoQueries()
-
         db = mongo.connect()
 
         query_result = db["FUNDOS"].find({},{
-                                        "Ticker": 1,
+                                        "ticker": 1,
                                         "_id": 0
                                         })
         
@@ -105,23 +101,23 @@ class Relatorio:
         mongo.close()
         print(df_fundos)
         print('')
-        input("Precione Enter para sair do Relatorio")
+        input("precione enter para sair do relatorio")
 
     def get_dividendos(self):
         mongo = MongoQueries()
 
         db = mongo.connect()
         """
-        query_result = db["DIVIDENDOS"].aggregate([{
+        query_result = db["dividendos"].aggregate([{
                                                         "$match": {
-                                                        "TICKER": { "$ne: null" }
+                                                        "ticker": { "$ne: null" }
                                                         }
                                                     },
                                                     {
                                                         "$lookup": {
-                                                        "from": "COTACOES",
-                                                        "localField": "TICKER",
-                                                        "foreignField": "TICKER",
+                                                        "from": "cotacoes",
+                                                        "localfield": "ticker",
+                                                        "foreignfield": "ticker",
                                                         "as": "cotacoes"
                                                         }
                                                         },
@@ -130,21 +126,21 @@ class Relatorio:
                                                         },
                                                         {
                                                             "$match:" {
-                                                                "cotacoes.P_VP": { "$ne": "null" }
+                                                                "cotacoes.p_vp": { "$ne": "null" }
                                                                 }
                                                         },
                                                         {   "$group": {
                                                             "_id": {
-                                                                "TICKER": "$TICKER",
-                                                                "P_VP": "$cotacoes.P_VP"
+                                                                "ticker": "$ticker",
+                                                                "p_vp": "$cotacoes.p_vp"
                                                             },
-                                                            "rendimento_total": { "$sum": "$RENDIMENTO" }
+                                                            "rendimento_total": { "$sum": "$rendimento" }
                                                             }
                                                             },
                                                             {   "$project": {
                                                                 "_id": 0,
-                                                                "TICKER": "$_id.TICKER",
-                                                                "P_VP": "$_id.P_VP",
+                                                                "ticker": "$_id.ticker",
+                                                                "p_vp": "$_id.p_vp",
                                                                 "rendimento_total": 1
                                                                 }
                                                             }
