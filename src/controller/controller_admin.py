@@ -12,7 +12,7 @@ class Controller_Admin():
     def inserir_admin(self) -> None:
 
         # Cria uma nova conexão com o banco que permite alteração
-        self.mongo.connect()
+        db = self.mongo.connect()
         
        
         # Solicita CNPJ do administrador 
@@ -22,23 +22,25 @@ class Controller_Admin():
             admin = input("informe o Cnpj do Administrador: ")
        
 
-        if self.verifica_existencia(coluns="Administradores", seek={"CNPJ_ADMIN": admin}): #Verificar se exista no banco na tabela fondos 
+        if self.verifica_existencia(db=db, coluns="ADMINISTRADORES", seek=[("cnpj_admin", admin)], header=[("_id",0),('cnpj_admin', 1)]): #Verificar se exista no banco na tabela fondos 
             # solicita o restante do cadastro 
             admin = self.cadastrar_admin(cnpj_admin=admin)
             
             # Inserir o cadastro do Fundo
-            #self.mongo.db.update_one({"CNPJ_ADMIN": admin},{"$set":{}}, upsert=True)) #Terminar com dict de insert no db
+            result = db["ADMINISTRADORES"].insert_one({
+                                            "nome": admin.get_nome(),
+                                            "telefone": admin.get_telefone(),
+                                            "email": admin.get_email(),
+                                            "url_site": admin.get_url_site(),
+                                            "cnpj_admin": admin.get_cnpj_admin()
+                                            })
             
-            # Recupera os dados do novo ticker criado transformando em um DataFrame
-            seek_admin = self.mongo.recover_data(coluns="Administradores",seek={}) #erminar com dict de busca no db
-            new_admin = Administradores(nome=seek_admin.nome.values[0], 
-                                        telefone=seek_admin.telefone.values[0], 
-                                        email=seek_admin.email.values[0],
-                                        url_site=seek_admin.url_site.values[0],
-                                        cnpj_admin=seek_admin.cnpj_admin.values[0])
-            print(new_admin.to_string())
-            self.mongo.close()
-            return new_admin
+            if result.inserted_id !='':
+                # Recupera os dados do novo ticker criado transformando em um DataFrame
+                seek_admin = self.mongo.recover_data(db=db, coluns="ADMINISTRADORES",seek=[('cnpj_admin',admin.get_cnpj_admin())], header=[()]) #erminar com dict de busca no db
+                print("administrador cadastrado !")
+                print(seek_admin.head())
+                
         else:
             print(f"Existe Administrador cadastrado com esse CNPJ {admin}")
             return None 
@@ -46,7 +48,7 @@ class Controller_Admin():
     def atualizar_admin(self):
         
         # Cria uma nova conexão com o banco que permite alteração
-        self.mongo.connect()
+        db = self.mongo.connect()
 
         # Solicita ao usuario o cadastro do Fundo
         admin = input("informe o Cnpj do Administrador: ")
@@ -54,9 +56,8 @@ class Controller_Admin():
         while not admin.isnumeric() or len(admin) > 14 or len(admin) <= 13:
             admin = input("informe o Cnpj do Administrador: ")
 
-
         # Verifica se o fundo existe na base de dados
-        if not self.verifica_existencia(admin=admin):
+        if not self.verifica_existencia(db=db, coluns='ADMINISTRADORES', seek=[('cnpj_admin',admin)], header=[()]):
             obj_admin = self.cadastrar_admin(cnpj_admin=admin)
 
             
@@ -69,25 +70,25 @@ class Controller_Admin():
  
             if len(aux_dict) != 0:   
                 document = {key: value for key, value in aux_dict.items()}
-                self.mongo.db.administradores.update_one({"CNPJ_ADMIN": admin},{"$set": document}, upsert=True)
+                result = db["ADMINISTRADORES"].update_one({"cnpj_admin": admin},{'$set': document})
             
-            seek_admin = self.mongo.recover_data(coluns="Administradores",seek={}) #terminar com dict de busca no db
-            new_admin = Administradores(nome=seek_admin.nome.values[0], 
-                                        telefone=seek_admin.telefone.values[0], 
-                                        email=seek_admin.email.values[0],
-                                        url_site=seek_admin.url_site.values[0],
-                                        cnpj_admin=seek_admin.cnpj_admin.values[0])
-            print(new_admin.to_string())
-            self.mongo.close()
+            if result.matched_count:
+                # Recupera os dados do novo ticker criado transformando em um DataFrame
+                seek_admin = self.mongo.recover_data(db=db, coluns="ADMINISTRADORES",seek=[('cnpj_admin',admin)], header=[()]) #erminar com dict de busca no db
+                print("administrador cadastrado !")
+                print(seek_admin.head())
             
-            admin.__delattr__
+            obj_admin.__delattr__
         else:
             print(f"O Cnpj {admin._cnpj} do Administrador informado não existe.")
+            aux = input("deseja temtar novamente infrome S ou N: ")
+            if aux.upper == 'S':
+                self.atualizar_admin()
             return None 
       
     def deletar_admin(self):
         # Cria uma nova conexão com o banco que permite alteração
-        self.mongo.connect()
+        db = self.mongo.connect()
         
         # Solicita ao usuario o cadastro do Fundo
         admin = input("informe o Cnpj do Administrador: ")
@@ -95,43 +96,49 @@ class Controller_Admin():
         while not admin.isnumeric() or 14 < len(admin) or 15 <= len(admin):
             admin = input("informe o Cnpj do Administrador: ")
         
-        if not self.verifica_existencia(coluns="Administradores", seek={}): #Criar pesquisa 
+        if not self.verifica_existencia(db=db, coluns='ADMINISTRADORES', seek=[('cnpj_admin',admin)], header=[()]): #Criar pesquisa 
+
+            # Recupera os dados do fundo transformando em um DataFrame
+            df_fundo = self.mongo.recover_data(db=db, coluns='FUNDOS', seek=[("cnpj_admin", admin)],  header=[()])
         
-            if not self.verifica_existencia(coluns='FUNDOS',seek={}):       #Criar pesquisa
-                # Recupera os dados do fundo transformando em um DataFrame
-                df_fundo = self.mongo.recover_data(coluns="FUNDOS", seek={}) # Montar busca
+            if not self.verifica_existencia(db=db, coluns='FUNDOS', seek=[("ticker", df_fundo.ticker.values[0])], header=[("_id", 0),("ticker",1),("tipo_abbima",1)]):       #Criar pesquisa
+                
                 # Verificar se existe registro desse fundos na tabela cotações e dividendos
-                if not self.verifica_existencia(coluns='COTACOES',seek={}) and not self.verifica_existencia(coluns='DIVIDENDOS', seek={}):
+                if not self.verifica_existencia(db=db, coluns='COTACOES', seek=[("ticker", df_fundo.ticker.values[0])], header=[("_id", 0),("ticker",1)]) and not self.verifica_existencia(db=db, coluns='DIVIDENDOS', seek=[("ticker", df_fundo.ticker.values[0])] ,header=[("_id", 0),("ticker",1)]):
                 
                     if "S" == input(f"Tem certezar que deseja excluir registro das cotações e dividandos desse fundo: {df_fundo.ticker.values[0]} ? S OU N").upper():
                         # Recupera os dados do COTACOES transformando em um DataFrame
-                        df_cotas_fundo = self.mongo.recover_data(coluns='COTACOES', seek={})
+                        df_cotas_fundo = self.mongo.recover_data(db=db, coluns='COTACOES', seek=[("ticker", df_fundo.ticker.values[0])], header=[])
                         # Recupera os dados do DIVIDENDOS transformando em um DataFrame
-                        df_dividendos_fundos = self.mongo.recover_data(coluns='DIVIDENDOS', seek={})
+                        df_dividendos_fundos = self.mongo.recover_data(db=db, coluns='DIVIDENDOS', seek=[("ticker", df_fundo.ticker.values[0])], header=[])
 
-                        for cota in df_cotas_fundo.size():
-                            # deleta os registro da tebala COTACOES referente ao fundo 
-                            ret =  self.mongo.recover_data(coluns="COTACOES" ,seek={}, external=True)
-                            print(ret)        
-                        for dividendo in df_dividendos_fundos.size():
-                            # deleta os registro da tebala COTACOES referente ao fundo
-                            ret = self.mongo.recover_data(coluns="DIVIDENDOS", seek={}, external=True)
                         
-                        self.mongo.recover_data(coluns='ADMINISTRADORES', seek={}, external=True)
+                        # deleta os registro da tebala COTACOES referente ao fundo 
+                        result =  db["COTACOES"].delete_many({"ticker": df_cotas_fundo.ticker.values[0]})
+                        print(str(result.deleted_count) + " deletado da cotações do ticker: "+ df_cotas_fundo.ticker.values[0])        
+                        
+                        # deleta os registro da tebala COTACOES referente ao fundo
+                        result = db["DIVIDENDOS"].delete_many({"ticker": df_dividendos_fundos.ticker.values[0]})
+                        print(str(result.deleted_count) + " deletado dividendos do ticker: "+ df_dividendos_fundos.ticker.values[0])        
+                        
                     else:
                         print("Não é possivel exlcuir Fundo sem excluir a suas cotações e dividendos")
                 else:
                     # Se não existir dados nas tabela  COTACOES e DIVIDENDOS o sistema vai perguntar se deseja exluir esse fundo.
                     if "S" == input(f"Tem certezar que deseja excluir fundo: {df_fundo.ticker.values[0]} ? S OU N ").upper():
-                        self.mongo.recover_data(coluns='FUNDOS', seek={}, external=True)
-                    
-                        self.mongo.recover_data(coluns='ADMINISTRADORES', seek={}, external=True)
-                       
+                        
+                        # deleta os registro da tebala fundos referente ao fundo 
+                        result =  db["FUNDOS"].delete_many({"cnpj_admin": df_cotas_fundo.cnpj_admin.values[0]})
+                        print(str(result.deleted_count) + " deletado da cotações do ticker: "+ df_cotas_fundo.cnpj_admin.values[0]) 
+
                     else: 
                         print("Não relaizar processo de exclução")
             else: 
                 if "S" == input(f"Tem certezar que deseja excluir esse administrador do Cnpj : {admin} ? S OU N ").upper():
-                   self.mongo.recover_data(coluns='ADMINISTRADORES', seek={}, external=True)
+                        
+                        # deleta os registro da tebala administradores referente ao fundo 
+                        result =  db["FUNDOS"].delete_many({"cnpj_admin": admin})
+                        print(str(result.deleted_count) + " deletado o administradores" ) 
                    
                 else: 
                     print(f"processo de deletção abortado !")
@@ -157,8 +164,13 @@ class Controller_Admin():
         return admin 
     
 
-    def verifica_existencia(self, coluns:str=None, seek:dict={}) -> bool:
-        # Recupera os dados do novo cliente criado transformando em um DataFrame
-        df_cliente = pd.DataFrame(self.mongo.db[coluns].find(seek))
-       
+    def verifica_existencia(self,db, coluns:str=None, seek:list=(), header:list=()) -> bool:
+        
+        if len(header) > 1:
+            aux_header = dict(header)
+        else:
+            aux_header = {}
+        
+        df_cliente = pd.DataFrame(db[coluns].find(dict(seek), aux_header))
+        
         return df_cliente.empty

@@ -11,23 +11,31 @@ class Controller_Dividendos():
     def inserir_Dividendos(self) -> None:
 
         # Cria uma nova conexão com o banco que permite alteração
-        self.mongo.connect()
+        db = self.mongo.connect()
 
         ## Solicita ao usuário o código do fundo a ser alterado
         div_ticker = input("informe o ticker do fundo: ")
         data_pag = input("Informe Data pagamento (Novo): ")
-        while not self.verifica_existencia(coluns='DIVIDENDOS', seek={}):
+        while not self.verifica_existencia(db=db, coluns='DIVIDENDOS', seek=[("ticker", div_ticker),("data_pag", data_pag)], header=[()]):
             div_ticker = input("informe o ticker do fundo: ")
             data_pag = input("Informe Data pagamento (Novo): ")
 
-        divid = self.cadastrar_dividendos(ticker=div_ticker, data_pag=data_pag)
+        #df_div = self.mongo.recover_data(db=db, coluns='DIVIDENDOS', seek=[("ticker", div_ticker),("data_pag", data_pag)], header=[()])
+        div = self.cadastrar_dividendos(ticker=div_ticker, data_pag=data_pag)
         
-        if self.verifica_existencia(coluns='DIVIDENDOS', seek={}):
-            #Inserir o cadastro do Fundo
-            self.mongo.db.dividendos.update_one({})
+        #Inserir o cadastro do Fundo
+        result = db["DIVIDENDOS"].insert_one({
+                                            "ticker": div.get_ticker(),
+                                            "data_pag": div.get_data_pag(),
+                                            "cota_base": div.get_cota_base(),
+                                            "ult_divid": div.get_ult_divid(),
+                                            "rendimento": div.get_rendimento(),
+                                            "div_yield": div.get_div_yield()
+                                        })
                 
+        if result.inserted_id !='':
             # Recupera os dados do novo ticker criado transformando em um DataFrame
-            df_div = self.mongo.recover_data(coluns="DIVIDENDOS", seek={})
+            df_div = self.mongo.recover_data(coluns="DIVIDENDOS", seek=[("ticker", div.get_ticker()),("data_pag", div.get_data_pag())], header=[()])
             print(df_div.ticker.values[0], df_div.data_pag.values[0])
         else:
             print("Já existe divindendo com essa informações cadastrado no sistema.")
@@ -36,18 +44,14 @@ class Controller_Dividendos():
     def atualizar_Dividendos(self):
 
         # Cria uma nova conexão com o banco que permite alteração
-       
-        self.mongo.connect()
+        db = self.mongo.connect()
 
         # Solicita ao usuário o código do fundo a ser alterado
         div_ticker = input("informe o ticker do fundo: ")
         data_pag = input("Informe Data pagamento (Novo): ")
-        while self.verifica_existencia(coluns='DIVIDENDOS', seek={}):
+        while self.verifica_existencia(db=db, coluns='DIVIDENDOS', seek=[("ticker", div_ticker),("data_pag", data_pag)], header=[()]):
             div_ticker = input("informe o ticker do fundo: ")
             data_pag = input("Informe Data pagamento (Novo): ")
-
-        df_div = self.mongo.recover_data(coluns='DIVIDENDOS', seek={})
-        # df_div = oracle.sqlToDataFrame(f"""SELECT ID,TICKER, DATA_PAG FROM DIVIDENDOS  WHERE TICKER = '{div_ticker}' AND DATA_PAG ='{data_pag}'""")
         
         atual_div = self.cadastrar_dividendos(ticker=div_ticker, data_pag=data_pag)
 
@@ -61,13 +65,13 @@ class Controller_Dividendos():
         if len(aux_dict) != 0:   
             document = {key: value for key, value in aux_dict.items()}
             
-            self.mongo.db.dividendos.update_one({"TICKER": "DIVIDENDOS"},{"$set": document}, upsert=True)
+            result = db["DIVIDENDOS"].update_one({"ticker": div_ticker, "data_pag": data_pag },{"$set": document})
+
+            if result.matched_count >0:
+                df_div = self.mongo.recover_data(db=db, coluns='DIVIDENDOS', seek=[("ticker", div_ticker),("data_pag", data_pag)], header=[()])
             
-            
-            df_div = self.mongo.recover_data(coluns="DIVIDENDOS", seek={})
-            #df_div = oracle.sqlToDataFrame(f"""SELECT TICKER, DATA_PAG, COTA_BASE, ULT_DIVID, RENDIMENTO, DIV_YIELD FROM DIVIDENDOS  WHERE TICKER = '{atual_div.get_ticker()}' AND DATA_PAG ='{atual_div.get_data_pag()}'""")
-            print("Atualizado!")
-            print(df_div.head())
+                print("Atualizado!")
+                print(df_div.head())
         else:
             print("Não foi Informado registro para alteração")
         return
@@ -75,22 +79,19 @@ class Controller_Dividendos():
     def deletar_Dividendos(self):
 
         # Cria uma nova conexão com o banco que permite alteração
-        self.mongo.connect()
+        db = self.mongo.connect()
 
         # Solicita ao usuário o código do fundo a ser alterado
         div_ticker = input("informe o ticker do fundo: ")
         data_pag = input("Informe Data pagamento (Novo): ")
-        
-        while self.verifica_existencia(coluns='DIVIDENDOS', seek={}):
+        while self.verifica_existencia(db=db, coluns='DIVIDENDOS', seek=[("ticker", div_ticker),("data_pag", data_pag)], header=[()]):
             div_ticker = input("informe o ticker do fundo: ")
             data_pag = input("Informe Data pagamento (Novo): ")
 
-        df_div = self.mongo.recover_data(coluns='DIVIDENDOS', seek={})
-        #df_div = oracle.sqlToDataFrame(f"""SELECT ID, TICKER, DATA_PAG, COTA_BASE, ULT_DIVID, RENDIMENTO, DIV_YIELD FROM DIVIDENDOS  WHERE TICKER = '{div_ticker}' AND DATA_PAG ='{data_pag}'""")
-
+        df_div = self.mongo.recover_data(coluns='DIVIDENDOS', seek=[("ticker", div_ticker),("data_pag", data_pag)], header=[()])
+        
         if not df_div.empty:
-            #query = f""" DELETE FROM DIVIDENDOS WHERE TICKER = '{df_div.ticker.values[0]}' AND DATA_PAG ='{df_div.data_pag.values[0]}' AND ID='{df_div.id.values[0]}'"""
-            self.mongo.db.dividendos.delete_one({"ticker": df_div.ticker.values[0]})
+            self.mongo.db.dividendos.delete_one({"ticker": df_div.ticker.values[0], "data_pag": df_div.data_pag.values[0]})
             print("deletado com sucesso !")
         else:
             print("Registro informado Não encontrado")
@@ -113,9 +114,13 @@ class Controller_Dividendos():
         
         return dividendo
     
-    def verifica_existencia(self, coluns:str=None, seek:dict={}) -> bool:
-        # Recupera os dados do novo cliente criado transformando em um DataFrame
-        df_cliente = pd.DataFrame(self.mongo.db[coluns].find(seek))
-       
+    def verifica_existencia(self,db, coluns:str=None, seek:list=(), header:list=()) -> bool:
+        
+        if len(header) > 1:
+            aux_header = dict(header)
+        else:
+            aux_header = {}
+        
+        df_cliente = pd.DataFrame(db[coluns].find(dict(seek), aux_header))
+        
         return df_cliente.empty
-    
