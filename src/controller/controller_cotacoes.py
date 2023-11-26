@@ -15,16 +15,14 @@ class Controller_Cotacoes():
         
         # Solicita ao usuário o código do fundo a ser alterado
         ticker = input("informe o ticker do fundo: ")
-        data = input("Informe mês: ")
-        while self.verifica_existencia(db=db, coluns='FUNDOS', seek=[("ticker", ticker)], header=[("_id", 0),("ticker",1),("tipo_abbima",1)]):       #Criar pesquisa
+        while self.verifica_existencia(coluns='FUNDOS', seek={}):
             ticker = input("informe o ticker do fundo: ")
-            data = input("Informe mês: ")
         
-        if self.verifica_existencia(db=db, coluns="COTACOES", seek=[("ticker", ticker),("mes", data)], header=[("_id", 0),("ticker",1),("mes",1)]):
-            
-            # Solicita ao usuario o cadastro do cotacoes
-            cota = self.cadastrar_cotacao(db=db, ticker=ticker, mes=data)
+        # Solicita ao usuario o cadastro do cotacoes
+        cota = self.cadastrar_cotacao(ticker=ticker)
 
+        if self.verifica_existencia(coluna='COTACOES', seek={}):
+            
             #Inserir o cadastro do Fundo
             result = db["COTAOES"].insert_one({
                                         "ticker": cota.get_ticker(),
@@ -113,7 +111,7 @@ class Controller_Cotacoes():
                 print(f"Cotação ticker {str(df_cota.ticker.values[0])} mes: {str(df_cota.mes.values[0])} deletada do sistema")
         return
     
-    def cadastrar_cotacao(self, db, ticker:str='', mes:str='') -> Cotacoes:
+    def cadastrar_cotacao(self, ticker:str='') -> Cotacoes:
         mes:str = ''
         cotacao = Cotacoes()
 
@@ -123,8 +121,7 @@ class Controller_Cotacoes():
         
         if ticker == '' and mes == '':
             ticker = input("Ticker (Novo): ")
-            mes = input("Mês cotação (Novo): ")
-            while self.verifica_existencia(db=db, coluns='FUNDOS', seek=[("ticker", ticker)('mes',mes)], header=[("_id", 0),("ticker",1),("tipo_abbima",1)]):       #Criar pesquisa
+            while self.verifica_existencia(coluns='FUNDOS', seek={}):
                 ticker = input("informe o ticker do fundo: ")
                 mes = input("Mês cotação (Novo): ")
         
@@ -136,6 +133,12 @@ class Controller_Cotacoes():
         cotacao.set_maximo(maximo_cota= input("Cota maxima (Novo): "))
         cotacao.set_abertura(abertura= input("Abertura (Novo): "))
         cotacao.set_volume_cotas(volume_cotas= input("Valume Cotas (Novo): "))
+        
+        mes= input("Mês cotação (Novo): ")
+        
+        while not self.verifica_existencia(coluns='COTACOES', seek={}):
+            mes = input("Mês cotação (Novo): ")
+
         cotacao.set_mes(mes)
         cotacao.set_p_vp(p_vp= input("P_VP (Novo): "))
   

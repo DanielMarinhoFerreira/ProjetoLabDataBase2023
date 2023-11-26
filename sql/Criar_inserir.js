@@ -1,20 +1,5 @@
-db.createCollection("ADMINISTRADORES")
-db.ADMINISTRADORES.createIndex({ "CNPJ_ADMIN": 1 }, { unique: true })
-
-db.createCollection("FUNDOS")
-db.FUNDOS.createIndex({ "TICKER": 1 }, { unique: true })
-db.FUNDOS.createIndex({ "CNPJ_ADMIN": 1 })
-db.FUNDOS.createIndex({ "CNPJ": 1 })
-
-db.createCollection("DIVIDENDOS")
-db.DIVIDENDOS.createIndex({ "TICKER": 1 })
-
-db.createCollection("COTACOES")
-db.COTACOES.createIndex({ "TICKER": 1 })
-
-
 // Inserções de administradores>
-db.administradores.insertMany([
+db.ADMINISTRADORES.insertMany([
   {
       nome: "PLANNER CORRETORA DE VALORES SA",
       telefone: "1121722667",
@@ -46,7 +31,7 @@ db.administradores.insertMany([
 ]);
 
 // Inserções de fundos>
-db.fundos.insertMany([
+db.FUNDOS.insertMany([
   {
       ticker: 'AAZQ11',
       tipo_abbima: 'Tílos e Valores Mobiliarios',
@@ -128,7 +113,7 @@ db.fundos.insertMany([
 ]);
 
 // Inserções de cotações>
-db.cotacoes.insertMany([
+db.COTACOES.insertMany([
   {
       ticker: 'AAZQ11',
       data_cota: '03/10/2023',
@@ -252,7 +237,7 @@ db.cotacoes.insertMany([
 ]);
 
 // Inserções de dividendos>
-db.dividendos.insertMany([
+db.DIVIDENDOS.insertMany([
   {
       ticker: 'AAZQ11',
       data_pag: '05/11/2023',
@@ -334,15 +319,3 @@ db.dividendos.insertMany([
       div_yield: 7.75
   }
 ]);
-
-db.FUNDOS.createIndex({ "CNPJ_ADMIN": 1 })
-db.FUNDOS.updateMany({}, { $unset: { CNPJ_ADMIN: "" } })
-db.FUNDOS.updateMany({}, { $set: { ADMINISTRADORES_CNPJ: 12345678901234 } })
-
-db.COTACOES.createIndex({ "TICKER": 1 })
-db.COTACOES.updateMany({}, { $unset: { TICKER: "" } })
-db.COTACOES.updateMany({}, { $set: { FUNDOS_TICKER: "ABCDEF" } })
-
-db.DIVIDENDOS.createIndex({ "TICKER": 1 })
-db.DIVIDENDOS.updateMany({}, { $unset: { TICKER: "" } })
-db.DIVIDENDOS.updateMany({}, { $set: { FUNDOS_TICKER: "ABCDEF" } })

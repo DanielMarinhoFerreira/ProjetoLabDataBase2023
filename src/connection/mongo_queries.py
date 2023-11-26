@@ -33,24 +33,23 @@ class MongoQueries:
         df = pd.DataFrame({f"total_{collection_name}": [total_documentos]})
         return df
 
-    def recover_data(self, coluns:str=None, external:bool=False, seek:dict={}) -> pd.DataFrame:
+    def recover_data(self, db ,coluns:str=None, seek:list=(), header:list=()) -> pd.DataFrame:
         """
         @param: coluns -> coluna de busca dos dados
         @param: external -> permite uma nova conexão com o banco que permite alteração
-        @param: seek -> dicionario contendo a informação de busca ou de insert exe.: {"cpf": 1, "nome": 1, "_id": 0}
-        """       
-        if external:
-            # Cria uma nova conexão com o banco que permite alteração
-            self.mongo.connect()
+        @param: seek -> informação de busca exe.: [("cpf", 12058236528)]
+        @param: header -> Informação de retorno da busca exe.: [("nome", 1),("_id", 0)]
+        """ 
 
+        
+        if len(header) > 1:
+            aux_header = dict(header)
+        else:
+            aux_header = {}
         # Recupera os dados do novo cliente criado transformando em um DataFrame
-        if not coluns and not seek:
-            df_data = pd.DataFrame(list(self.mongo.db[coluns].find(seek)))
+        if coluns != '' and len(seek) > 0:
+            df_data = pd.DataFrame(list(db[coluns].find(dict(seek), aux_header)))
         else:
             return None
-        
-        if external:
-            # Fecha a conexão com o Mongo
-            self.mongo.close()
 
         return df_data
