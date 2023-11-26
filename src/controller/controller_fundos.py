@@ -89,20 +89,27 @@ class Controller_Fundos:
                 
                 print("administrador do CNPJ: "+ str(df_admin.cnpj_admin.values[0]) +" : "+ df_admin.nome.values[0] +" Cadastrdo !")
                     
-                    self.mongo.db.fundos.insert_one()
-                    #oracle.write(fundo.set_insert())
-                
+                result = db["FUNDOS"].insert_one({
+                                    "ticker": fundo.get_Ticker(),
+                                    "tipo_abbima": fundo.get_tipo_abbima(),
+                                    "segmento": fundo.get_segmento(),
+                                    "conta_emit": fundo.get_conta_emit(),
+                                    "num_cotas": fundo.get_num_cota(),
+                                    "razao_social": fundo.get_razao_social(),
+                                    "cnpj": fundo.get_cnpj(),
+                                    "nome_pregao": fundo.get_nome_pregao(),
+                                    "prazo_duracao": fundo.get_prazo_doracao(),
+                                    "tipo_gestao": fundo.get_tipo_gestao(),
+                                    "cnpj_admin": fundo.get_cnpj_admin()
+                                    })
+                if result.inserted_id !='':
                     # Recupera os dados do novo ticker criado transformando em um DataFrame
-                    df_fundo = self.mongo.recover_data(coluns='FUNDOS', seek={})
-                    #df_fundo = oracle.sqlToDataFrame(f"select ticker, TIPO_ABBIMA from FUNDOS where ticker = '{fundo.get_Ticker()}'")
+                    df_fundo = self.mongo.recover_data(db=db, coluns='FUNDOS', seek=[("ticker", fundo.get_Ticker())],  header=[("_id", 0),("ticker",1),("tipo_abbima",1)])
+                
                     print("Ticker: "+ df_fundo.ticker.values[0] +" : "+ df_fundo.tipo_abbima.values[0] +" Cadastrdo !")
+            else:
+                print("ocorreu algum erro. Solicite verificação do TI")
 
-                else:
-                    print("ocorreu algum erro. Solicite verificação do TI")
-        else:
-            print(f"O ticker: {fundo.get_Ticker()} desse fundo já está cadastrado.")
-            return None 
-        
     def atualizar_fundos(self) -> None:
         # Cria uma nova conexão com o banco que permite alteração
         
