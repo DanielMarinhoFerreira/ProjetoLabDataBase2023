@@ -35,7 +35,7 @@ class Controller_Dividendos():
                 
         if result.inserted_id !='':
             # Recupera os dados do novo ticker criado transformando em um DataFrame
-            df_div = self.mongo.recover_data(coluns="DIVIDENDOS", seek=[("ticker", div.get_ticker()),("data_pag", div.get_data_pag())], header=[()])
+            df_div = self.mongo.recover_data(db=db, coluns="DIVIDENDOS", seek=[("ticker", div.get_ticker()),("data_pag", div.get_data_pag())], header=[()])
             print(df_div.ticker.values[0], df_div.data_pag.values[0])
         else:
             print("Já existe divindendo com essa informações cadastrado no sistema.")
@@ -88,11 +88,12 @@ class Controller_Dividendos():
             div_ticker = input("informe o ticker do fundo: ")
             data_pag = input("Informe Data pagamento (Novo): ")
 
-        df_div = self.mongo.recover_data(coluns='DIVIDENDOS', seek=[("ticker", div_ticker),("data_pag", data_pag)], header=[()])
+        df_div = self.mongo.recover_data(db=db, coluns='DIVIDENDOS', seek=[("ticker", div_ticker),("data_pag", data_pag)], header=[()])
         
         if not df_div.empty:
-            self.mongo.db.dividendos.delete_one({"ticker": df_div.ticker.values[0], "data_pag": df_div.data_pag.values[0]})
-            print("deletado com sucesso !")
+           result = db["DIVIDENDOS"].delete_one({"ticker": df_div.ticker.values[0], "data_pag": df_div.data_pag.values[0]})
+           if result.deleted_count > 0:
+                print("deletado com sucesso !")
         else:
             print("Registro informado Não encontrado")
         return
