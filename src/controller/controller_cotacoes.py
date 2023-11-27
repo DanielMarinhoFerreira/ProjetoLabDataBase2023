@@ -26,7 +26,7 @@ class Controller_Cotacoes():
             cota = self.cadastrar_cotacao(db=db, ticker=ticker, mes=data)
 
             #Inserir o cadastro do Fundo
-            result = db["COTAOES"].insert_one({
+            result = db["COTACOES"].insert_one({
                                         "ticker": cota.get_ticker(),
                                         "data_cota": cota.get_data_cota(),
                                         "cota_atual": cota.get_cota_atual(),
@@ -36,14 +36,14 @@ class Controller_Cotacoes():
                                         "abertura": cota.get_abertura(),
                                         "volume_cotas": cota.get_volume_cotas(),
                                         "mes": cota.get_mes(),
-                                        "p_vp": cota.get_mes()
+                                        "p_vp": cota.get_p_vp()
                                         })
             
             if result.inserted_id !='':  
                 # Recupera os dados do novo ticker criado transformando em um DataFrame
                 df_fundo  = self.mongo.recover_data(db=db, coluns='COTACOES', seek=[("ticker", cota.get_ticker()),("mes", cota.get_mes())], header=[("_id", 0),("ticker",1),("mes",1)])
 
-                print(df_fundo.ticker.values[0], df_fundo.mes.values[0])
+                print(f"ticker {df_fundo.ticker.values[0]} do {df_fundo.mes.values[0]} cadastrado!")
         else: 
             print('já existe uma cota cadastrada desse mês')
         return
