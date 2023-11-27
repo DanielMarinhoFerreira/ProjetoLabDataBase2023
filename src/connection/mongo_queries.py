@@ -33,15 +33,15 @@ class MongoQueries:
         df = pd.DataFrame({f"total_{collection_name}": [total_documentos]})
         return df
 
+    # Recupera os dados da coleção do MongoDB e retorna como Dataframe
     def recover_data(self, db ,coluns:str=None, seek:list=(), header:list=()) -> pd.DataFrame:
         """
         @param: coluns -> coluna de busca dos dados
         @param: external -> permite uma nova conexão com o banco que permite alteração
-        @param: seek -> informação de busca exe.: [("cpf", 12058236528)]
-        @param: header -> Informação de retorno da busca exe.: [("nome", 1),("_id", 0)]
+        @param: seek -> informação de busca ex.: [("cpf", 12058236528)]
+        @param: header -> Informação de retorno da busca ex.: [("nome", 1),("_id", 0)]
         """ 
 
-        
         if len(header) > 1:
             aux_header = dict(header)
         else:

@@ -4,6 +4,12 @@
 
 O projeto foi desenvolvido para demonstrar a utilização de um banco de dados MongoDB, utilizando a linguagem de programação Python e a biblioteca pymongo.
 
+## Video de apresentação do código
+
+https://www.youtube.com/watch?v=GIT5S-AXp24
+
+## Video de demonstração da aplicação
+
 ## Pré-requisitos
 
 Para executar o projeto, você precisará ter o Oracle Database instalado e configurado em sua máquina. Você também precisará ter o Python 3 instalado e a biblioteca pymongo instalada.
