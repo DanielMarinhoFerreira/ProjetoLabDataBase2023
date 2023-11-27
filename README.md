@@ -1,12 +1,12 @@
- # WKSP - Banco de Dados Oracle
+# Banco de Dados MongoDB
 
 ## Descrição
 
-O WKSP - Banco de Dados Oracle é um projeto desenvolvido para demonstrar o uso do banco de dados Oracle. O projeto foi desenvolvido utilizando a linguagem de programação Python e a biblioteca cx_Oracle.
+O projeto foi desenvolvido para demonstrar a utilização de um banco de dados MongoDB, utilizando a linguagem de programação Python e a biblioteca pymongo.
 
 ## Pré-requisitos
 
-Para executar o projeto, você precisará ter o Oracle Database instalado e configurado em sua máquina. Você também precisará ter o Python 3 instalado e a biblioteca cx_Oracle instalada.
+Para executar o projeto, você precisará ter o Oracle Database instalado e configurado em sua máquina. Você também precisará ter o Python 3 instalado e a biblioteca pymongo instalada.
 
 ## Instalação
 
@@ -21,10 +21,10 @@ pip install -r requirements.txt
 Para configurar o projeto, você precisará criar um arquivo de configuração chamado `config.ini`. O arquivo de configuração deve conter as seguintes informações:
 
 ```
-[oracle]
+[mongodb]
 host = localhost
-port = 1521
-service_name = XEPDB1
+port = 27017
+service_name = labdatabase
 user = labdatabase
 password = labDatabase2022
 ```
